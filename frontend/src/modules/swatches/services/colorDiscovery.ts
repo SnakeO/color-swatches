@@ -29,11 +29,11 @@ interface BinarySearchParams {
 
 /**
  * Generate evenly distributed sample hues from 0 to 359
- * @param count - Number of samples (minimum 2)
+ * @param count - Number of samples (minimum 3)
  */
 export function getSampleHues(count: number): number[] {
-  if (count < 2) {
-    count = 2
+  if (count < 3) {
+    count = 3
   }
   const hues: number[] = []
   for (let i = 0; i < count; i++) {

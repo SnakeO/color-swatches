@@ -39,24 +39,24 @@ describe('getSampleHues', () => {
     expect(hues).toEqual([0, 90, 180, 269, 359])
   })
 
-  it('enforces minimum of 2 samples', () => {
-    const hues = getSampleHues(1)
+  it('enforces minimum of 3 samples', () => {
+    const hues = getSampleHues(2)
 
-    expect(hues.length).toBe(2)
-    expect(hues).toEqual([0, 359])
+    expect(hues.length).toBe(3)
+    expect(hues).toEqual([0, 180, 359])
   })
 
   it('handles edge case count=0', () => {
     const hues = getSampleHues(0)
 
-    expect(hues.length).toBe(2)
-    expect(hues).toEqual([0, 359])
+    expect(hues.length).toBe(3)
+    expect(hues).toEqual([0, 180, 359])
   })
 
-  it('handles count=1 (becomes 2)', () => {
+  it('handles count=1 (becomes 3)', () => {
     const hues = getSampleHues(1)
 
-    expect(hues).toEqual([0, 359])
+    expect(hues).toEqual([0, 180, 359])
   })
 })
 
