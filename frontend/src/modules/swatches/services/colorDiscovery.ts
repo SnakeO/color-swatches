@@ -7,7 +7,6 @@
  * Algorithm:
  *   1. Sample evenly distributed hues (0 to 359)
  *   2. Binary search between adjacent samples with different names
- *   3. Also search large gaps (>30) even if endpoints have same name
  *
  * @module modules/swatches/services/colorDiscovery
  */
@@ -15,19 +14,28 @@
 import { config } from '@/shared/config'
 import { createLimiter } from '@/shared/services/concurrency'
 import { getColorAtHue } from './colorClient'
+import type { ColorData, LimiterFunction } from '@/shared/types'
 
 const { startingSamples: STARTING_SAMPLES, concurrencyLimit: CONCURRENCY_LIMIT } = config.algorithm
 
+interface BinarySearchParams {
+  left: ColorData
+  right: ColorData
+  s: number
+  l: number
+  foundNames: Set<string>
+  limit: LimiterFunction
+}
+
 /**
  * Generate evenly distributed sample hues from 0 to 359
- * @param {number} count - Number of samples (minimum 2)
- * @returns {number[]} Array of hue values
+ * @param count - Number of samples (minimum 2)
  */
-export function getSampleHues(count) {
+export function getSampleHues(count: number): number[] {
   if (count < 2) {
     count = 2
   }
-  const hues = []
+  const hues: number[] = []
   for (let i = 0; i < count; i++) {
     hues.push(Math.round((359 * i) / (count - 1)))
   }
@@ -36,16 +44,11 @@ export function getSampleHues(count) {
 
 /**
  * Binary search for color boundaries between two points
- * @param {Object} params - Search parameters
- * @param {Object} params.left - Left boundary color
- * @param {Object} params.right - Right boundary color
- * @param {number} params.s - Saturation
- * @param {number} params.l - Lightness
- * @param {Set} params.foundNames - Set of already found color names
- * @param {Function} params.limit - Concurrency limiter
- * @param {Function} onColorFound - Callback when new color discovered
  */
-async function binarySearch({ left, right, s, l, foundNames, limit }, onColorFound) {
+async function binarySearch(
+  { left, right, s, l, foundNames, limit }: BinarySearchParams,
+  onColorFound: (color: ColorData) => void
+): Promise<void> {
   // recursive base case
   if (right.hue - left.hue <= 1) {
     return
@@ -60,7 +63,7 @@ async function binarySearch({ left, right, s, l, foundNames, limit }, onColorFou
   }
 
   // Search BOTH sides in PARALLEL
-  const branches = []
+  const branches: Promise<void>[] = []
   if (midPoint.name !== left.name) {
     branches.push(binarySearch({ left, right: midPoint, s, l, foundNames, limit }, onColorFound))
   }
@@ -72,14 +75,17 @@ async function binarySearch({ left, right, s, l, foundNames, limit }, onColorFou
 
 /**
  * Discover all distinct colors for given S/L values
- * @param {number} s - Saturation (0-100)
- * @param {number} l - Lightness (0-100)
- * @param {Function} onColorFound - Callback for each discovered color
- * @returns {Promise<void>}
+ * @param s - Saturation (0-100)
+ * @param l - Lightness (0-100)
+ * @param onColorFound - Callback for each discovered color
  */
-export async function discoverColors(s, l, onColorFound) {
+export async function discoverColors(
+  s: number,
+  l: number,
+  onColorFound: (color: ColorData) => void
+): Promise<void> {
   const limit = createLimiter(CONCURRENCY_LIMIT)
-  const foundNames = new Set()
+  const foundNames = new Set<string>()
 
   // Phase 1: Fetch initial samples in PARALLEL
   const sampleHues = getSampleHues(STARTING_SAMPLES)
@@ -95,12 +101,12 @@ export async function discoverColors(s, l, onColorFound) {
   }
 
   // Phase 2: Binary search between samples with different names
-  const gapSearches = []
+  const gapSearches: Promise<void>[] = []
   for (let i = 0; i < samplePoints.length - 1; i++) {
     const left = samplePoints[i]
     const right = samplePoints[i + 1]
 
-    if (left.name !== right.name) {
+    if (left && right && left.name !== right.name) {
       gapSearches.push(binarySearch({ left, right, s, l, foundNames, limit }, onColorFound))
     }
   }

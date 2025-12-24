@@ -67,24 +67,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import SwatchCard from './SwatchCard.vue'
+import type { ColorData } from '@/shared/types'
+import type { SwatchStats } from '../types'
 
-const props = defineProps({
-  swatches: {
-    type: Array,
-    required: true,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  stats: {
-    type: Object,
-    default: () => ({ total: 0, cached: false }),
-  },
-})
+const props = withDefaults(
+  defineProps<{
+    swatches: readonly ColorData[]
+    loading?: boolean
+    stats?: SwatchStats
+  }>(),
+  {
+    loading: false,
+    stats: () => ({ total: 0, cached: false }),
+  }
+)
 
 /** Count of discovered colors */
 const colorCount = computed(() => props.swatches.length)

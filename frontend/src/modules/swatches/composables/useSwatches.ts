@@ -5,28 +5,37 @@
  * Delegates discovery to colorDiscovery service.
  *
  * @module modules/swatches/composables/useSwatches
- * @returns {Object} { swatches, loading, stats, fetchSwatches, cleanup }
  */
 
-import { ref, readonly } from 'vue'
+import { ref, readonly, type DeepReadonly, type Ref } from 'vue'
 import { cache } from '@/shared/services/cache'
 import { useAppStore } from '@/shared/stores/app'
 import { discoverColors } from '../services/colorDiscovery'
+import type { ColorData } from '@/shared/types'
+import type { SwatchStats } from '../types'
 
-export function useSwatches() {
+export interface UseSwatchesReturn {
+  swatches: DeepReadonly<Ref<ColorData[]>>
+  loading: DeepReadonly<Ref<boolean>>
+  stats: DeepReadonly<Ref<SwatchStats>>
+  fetchSwatches: (saturation: number, lightness: number) => Promise<void>
+  cleanup: () => void
+}
+
+export function useSwatches(): UseSwatchesReturn {
   const appStore = useAppStore()
 
   /* --- Reactive State --- */
-  const swatches = ref([])
+  const swatches = ref<ColorData[]>([])
   const loading = ref(false)
-  const stats = ref({ total: 0, cached: false })
+  const stats = ref<SwatchStats>({ total: 0, cached: false })
 
-  let abortController = null
+  let abortController: AbortController | null = null
 
   /* --- Helpers --- */
 
   /** Insert swatch in sorted order by hue */
-  function insertSorted(swatch) {
+  function insertSorted(swatch: ColorData): void {
     const index = swatches.value.findIndex((s) => s.hue > swatch.hue)
     if (index === -1) {
       swatches.value.push(swatch)
@@ -38,7 +47,7 @@ export function useSwatches() {
   /* --- Public API --- */
 
   /** Fetch all swatches for given saturation/lightness (with caching) */
-  async function fetchSwatches(saturation, lightness) {
+  async function fetchSwatches(saturation: number, lightness: number): Promise<void> {
     // Abort any in-progress fetch
     if (abortController) {
       abortController.abort()
@@ -53,7 +62,7 @@ export function useSwatches() {
     try {
       // Check complete swatches cache first
       const swatchesKey = cache.swatchesKey(saturation, lightness)
-      const cachedSwatches = cache.get(swatchesKey)
+      const cachedSwatches = cache.get<ColorData[]>(swatchesKey)
 
       if (cachedSwatches) {
         // Cache hit - load all swatches instantly
@@ -70,7 +79,7 @@ export function useSwatches() {
 
       stats.value = { total: swatches.value.length, cached: false }
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error instanceof Error && error.name !== 'AbortError') {
         appStore.notifyError('Failed to fetch swatches: ' + error.message)
       }
     } finally {
@@ -79,7 +88,7 @@ export function useSwatches() {
   }
 
   /** Cancel any in-progress fetch */
-  function cleanup() {
+  function cleanup(): void {
     if (abortController) {
       abortController.abort()
       abortController = null

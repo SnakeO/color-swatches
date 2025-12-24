@@ -9,10 +9,11 @@
 
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
+import type { Notification } from '@/shared/types'
 
 export const useAppStore = defineStore('app', () => {
   /* --- Notification State --- */
-  const notification = reactive({
+  const notification: Notification = reactive({
     show: false,
     message: '',
     color: 'success',
@@ -21,19 +22,19 @@ export const useAppStore = defineStore('app', () => {
   /* --- Actions --- */
 
   /** Show a notification with custom color */
-  function notify(message, color = 'success') {
+  function notify(message: string, color = 'success'): void {
     notification.message = message
     notification.color = color
     notification.show = true
   }
 
   /** Show a success notification (green) */
-  function notifySuccess(message) {
+  function notifySuccess(message: string): void {
     notify(message, 'success')
   }
 
   /** Show an error notification (red) */
-  function notifyError(message) {
+  function notifyError(message: string): void {
     notify(message, 'error')
   }
 

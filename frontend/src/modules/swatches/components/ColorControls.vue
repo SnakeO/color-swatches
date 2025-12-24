@@ -83,26 +83,32 @@
   </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { config } from '@/shared/config'
 
-const emit = defineEmits(['change'])
+const emit = defineEmits<{
+  change: [{ saturation: number; lightness: number }]
+}>()
 
 const saturation = ref(config.defaults.saturation)
 const lightness = ref(config.defaults.lightness)
 
-let lastEmitted = { s: null, l: null }
-let debounceTimer = null
+let lastEmitted: { s: number | null; l: number | null } = { s: null, l: null }
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 /** Debounced emit for text input */
-function debouncedEmit() {
-  clearTimeout(debounceTimer)
+function debouncedEmit(): void {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
   debounceTimer = setTimeout(emitChange, config.ui.debounceMs)
 }
 
-function emitChange() {
-  clearTimeout(debounceTimer) // Cancel pending debounce if Enter pressed
+function emitChange(): void {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer) // Cancel pending debounce if Enter pressed
+  }
   // Clamp values to valid range
   saturation.value = Math.max(0, Math.min(100, saturation.value || 0))
   lightness.value = Math.max(0, Math.min(100, lightness.value || 0))

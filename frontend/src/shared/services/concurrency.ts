@@ -6,18 +6,20 @@
  * @module shared/services/concurrency
  */
 
+import type { LimiterFunction } from '@/shared/types'
+
 /**
  * Creates a concurrency limiter for parallel async operations
- * @param {number} limit - Max concurrent operations
- * @returns {Function} Wrapper that queues operations beyond the limit
+ * @param limit - Max concurrent operations
+ * @returns Wrapper that queues operations beyond the limit
  */
-export function createLimiter(limit) {
+export function createLimiter(limit: number): LimiterFunction {
   let running = 0
-  const queue = []
+  const queue: Array<() => void> = []
 
-  return async (fn) => {
+  return async <T>(fn: () => Promise<T>): Promise<T> => {
     while (running >= limit) {
-      await new Promise((resolve) => queue.push(resolve))
+      await new Promise<void>((resolve) => queue.push(resolve))
     }
     running++
     try {

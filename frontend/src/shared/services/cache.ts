@@ -9,16 +9,16 @@
  */
 
 export const cache = {
-  get(key) {
+  get<T>(key: string): T | null {
     try {
       const item = localStorage.getItem(key)
-      return item ? JSON.parse(item) : null
+      return item ? (JSON.parse(item) as T) : null
     } catch {
       return null
     }
   },
 
-  set(key, value) {
+  set<T>(key: string, value: T): void {
     try {
       localStorage.setItem(key, JSON.stringify(value))
     } catch {
@@ -26,7 +26,7 @@ export const cache = {
     }
   },
 
-  remove(key) {
+  remove(key: string): void {
     try {
       localStorage.removeItem(key)
     } catch {
@@ -34,7 +34,7 @@ export const cache = {
     }
   },
 
-  swatchesKey(s, l) {
+  swatchesKey(s: number, l: number): string {
     return `swatches:${s}:${l}`
   },
 }

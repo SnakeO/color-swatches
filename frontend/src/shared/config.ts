@@ -7,7 +7,9 @@
  * @module shared/config
  */
 
-export const config = {
+import type { Config } from '@/shared/types'
+
+export const config: Config = {
   /* --- API --- */
   api: {
     baseUrl: 'https://www.thecolorapi.com',

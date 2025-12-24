@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    // Emit modern JavaScript (ES2022+) without downleveling
+    "target": "ESNext",
+    // Use standard ECMAScript class field semantics
+    "useDefineForClassFields": true,
+    // Use ES modules (import/export) syntax
+    "module": "ESNext",
+    // Include type definitions for modern JS, browser DOM, and iterables
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    // Skip type checking of declaration files for faster builds
+    "skipLibCheck": true,
+
+    // Use bundler-style module resolution (Vite, webpack, etc.)
+    "moduleResolution": "bundler",
+    // Allow imports with .ts extension (bundler will handle)
+    "allowImportingTsExtensions": true,
+    // Ensure each file can be transpiled independently
+    "isolatedModules": true,
+    // Treat all files as modules (not scripts)
+    "moduleDetection": "force",
+    // Don't emit JS files (Vite handles this)
+    "noEmit": true,
+    // Preserve JSX for Vue/React to handle
+    "jsx": "preserve",
+
+    // Enable all strict type-checking options
+    "strict": true,
+    // Error on unused local variables
+    "noUnusedLocals": true,
+    // Error on unused function parameters
+    "noUnusedParameters": true,
+    // Error on switch case fall-through without break
+    "noFallthroughCasesInSwitch": true,
+    // Add undefined to array index access types
+    "noUncheckedIndexedAccess": true,
+
+    // Base directory for resolving non-relative imports
+    "baseUrl": ".",
+    // Path alias: @/* maps to src/*
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  // Files to include in compilation
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  // Reference to Vite config's separate tsconfig
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

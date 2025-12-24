@@ -10,9 +10,9 @@
 -->
 
 <template>
-  <div class="swatch-card" :class="{ pending: swatch.pending }" @click="handleClick">
+  <div class="swatch-card" :class="{ pending: isPending }" @click="handleClick">
     <!-- Pending Placeholder -->
-    <template v-if="swatch.pending">
+    <template v-if="isPending">
       <div class="color-block placeholder">
         <v-progress-circular indeterminate size="24" width="2" color="grey" />
       </div>
@@ -29,26 +29,30 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { computed } from 'vue'
 import { useAppStore } from '@/shared/stores/app'
+import type { Swatch } from '../types'
 
-const props = defineProps({
-  swatch: {
-    type: Object,
-    required: true,
-  },
-})
+const props = defineProps<{
+  swatch: Swatch
+}>()
 
 const appStore = useAppStore()
 
-function handleClick() {
-  if (props.swatch.pending) {
+const isPending = computed(() => 'pending' in props.swatch && props.swatch.pending)
+
+function handleClick(): void {
+  if (isPending.value) {
     return
   }
   copyHex()
 }
 
-async function copyHex() {
+async function copyHex(): Promise<void> {
+  if (!props.swatch.hex) {
+    return
+  }
   try {
     await navigator.clipboard.writeText(props.swatch.hex)
     appStore.notifySuccess(`Copied ${props.swatch.hex}`)

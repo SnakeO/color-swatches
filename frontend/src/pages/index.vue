@@ -27,16 +27,17 @@
   </v-container>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { useSwatches } from '@/modules/swatches/composables/useSwatches'
 import ColorControls from '@/modules/swatches/components/ColorControls.vue'
 import SwatchGrid from '@/modules/swatches/components/SwatchGrid.vue'
 import { config } from '@/shared/config'
+import type { ControlsChangeEvent } from '@/modules/swatches/types'
 
 const { swatches, loading, stats, fetchSwatches, cleanup } = useSwatches()
 
-function handleControlsChange({ saturation, lightness }) {
+function handleControlsChange({ saturation, lightness }: ControlsChangeEvent): void {
   fetchSwatches(saturation, lightness)
 }
 

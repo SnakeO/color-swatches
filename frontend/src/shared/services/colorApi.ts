@@ -9,15 +9,25 @@
  */
 
 import { config } from '@/shared/config'
+import type { ColorData } from '@/shared/types'
+
+interface ColorApiResponse {
+  name: { value: string }
+  hex: { value: string }
+  rgb: { r: number; g: number; b: number }
+}
 
 /**
  * Fetch color data for a specific HSL value
- * @param {number} hue - Hue value (0-359)
- * @param {number} saturation - Saturation percentage (0-100)
- * @param {number} lightness - Lightness percentage (0-100)
- * @returns {Promise<{hue: number, name: string, hex: string, rgb: {r: number, g: number, b: number}}>}
+ * @param hue - Hue value (0-359)
+ * @param saturation - Saturation percentage (0-100)
+ * @param lightness - Lightness percentage (0-100)
  */
-export async function fetchColor(hue, saturation, lightness) {
+export async function fetchColor(
+  hue: number,
+  saturation: number,
+  lightness: number
+): Promise<ColorData> {
   const params = new URLSearchParams({
     hsl: `${hue},${saturation}%,${lightness}%`,
   })
@@ -28,7 +38,7 @@ export async function fetchColor(hue, saturation, lightness) {
     throw new Error(`Color API error: ${response.status}`)
   }
 
-  const data = await response.json()
+  const data: ColorApiResponse = await response.json()
 
   return {
     hue,

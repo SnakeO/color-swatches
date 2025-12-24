@@ -13,7 +13,7 @@
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useAppStore } from './shared/stores/app'
 
 const appStore = useAppStore()
