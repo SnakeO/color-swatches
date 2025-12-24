@@ -17,7 +17,7 @@ export const config: Config = {
 
   /* --- Binary Search Algorithm --- */
   algorithm: {
-    startingSamples: 20,
+    startingSamples: 10,
     concurrencyLimit: 20, // HTTP/2 allows much higher; 20 is safe default
   },
 
