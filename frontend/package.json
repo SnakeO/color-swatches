@@ -5,7 +5,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:unit": "vitest run --dir tests/unit",
+    "test:feature": "vitest run --dir tests/feature",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -15,11 +20,16 @@
     "vuetify": "^3.7.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/coverage-v8": "^4.0.16",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.0.11",
     "sass": "^1.83.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.6",
+    "vitest": "^4.0.16",
     "vue-tsc": "^3.2.1"
   }
 }

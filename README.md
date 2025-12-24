@@ -11,14 +11,14 @@ An HSL color swatch grid application that discovers distinct named colors using 
 
 Enter Saturation and Lightness values, and the app displays all distinct named colors for those HSL coordinates. Colors are discovered using an efficient binary search algorithm with parallel fetching and cached in localStorage for instant repeat requests.
 
+![](https://wow-ss-from-2020.s3.amazonaws.com/demo.mov)
+
 ### Features
 
-- Binary search algorithm (~30-50 API calls vs 360 brute force)
+- Binary search algorithm
 - Parallel HTTP requests with concurrency limiting
 - localStorage caching for instant repeat requests
 - Responsive grid layout
-- Vuetify Material Design UI
-- Zero backend infrastructure
 
 ## Quick Start
 
@@ -41,26 +41,42 @@ npm run dev
 
 Open http://localhost:3000 (or the port shown in terminal).
 
-## Architecture
+## Testing
 
+The project includes comprehensive tests at three levels:
+
+### Test Stack
+
+| Type | Framework | Count |
+|------|-----------|-------|
+| Unit | Vitest | 43 tests |
+| Feature | Vitest + Vue Test Utils | 33 tests |
+| E2E | Playwright | 12 tests |
+
+### Commands
+
+```bash
+cd frontend
+
+# Run all unit & feature tests
+npm test
+
+# Run specific test suites
+npm run test:unit      # Unit tests only
+npm run test:feature   # Feature tests only
+
+# Coverage report
+npm run test:coverage
+
+# E2E tests (requires dev server)
+npm run test:e2e
 ```
-┌──────────────────────────────────────────────┐
-│                  Browser                      │
-│  ┌─────────────┐  ┌─────────────────────────┐ │
-│  │   Vue 3     │  │     localStorage        │ │
-│  │  Vuetify    │  │  (swatches + colors)    │ │
-│  └──────┬──────┘  └────────────▲────────────┘ │
-│         │                      │              │
-│         │    Binary Search     │              │
-│         │    + Caching         │              │
-└─────────┼──────────────────────┼──────────────┘
-          │                      │
-          ▼                      │
-   ┌──────────────┐              │
-   │  Color API   │──────────────┘
-   │  (external)  │   fetch() with CORS
-   └──────────────┘
-```
+
+### CI/CD
+
+Tests run automatically on push via GitHub Actions (`.github/workflows/test.yml`):
+- Unit & feature tests run in parallel with E2E tests
+- Playwright report uploaded as artifact on failure
 
 ### Data Flow
 
@@ -70,85 +86,6 @@ Open http://localhost:3000 (or the port shown in terminal).
    - **Cache miss**: Run binary search with parallel fetching
 3. Discovery complete: Cache final result in localStorage
 4. Display swatches sorted by hue
-
-## Binary Search Algorithm
-
-The Color API has no "list all names" endpoint. Instead of brute-forcing 360 hue values, we use binary search:
-
-```
-1. Generate 20 evenly distributed samples from hue 0 to 359
-
-2. Fetch all samples in parallel (concurrency limit: 20)
-
-3. Binary search between samples with different names
-   - Search BOTH sides to find all colors
-   - All branches run in parallel
-
-Result: ~30-50 calls instead of 360, ~8 seconds total
-```
-
-### Example Trace
-
-```
-Position: 0  1  2  3  4  5  6  7  8  9  10 11 12
-Color:    A  A  B  C  C  D  D  D  E  E  F  G  G
-
-Initial: 0→A, 4→C, 8→E, 12→G (4 calls)
-Gap(0-4): mid=2→B, search both sides
-Gap(4-8): mid=6→D, search both sides
-Gap(8-12): mid=10→F, search both sides
-Result: All 7 colors found
-```
-
-## Caching Strategy
-
-```
-First request (S=100, L=50):
-├─ Check swatches:100:50 → MISS
-├─ Binary search with per-hue caching
-├─ Complete: Save to swatches:100:50
-└─ Cleanup: Remove working color cache
-
-Repeat request:
-└─ Check swatches:100:50 → HIT (instant load)
-```
-
-## Project Structure
-
-```
-frontend/
-├── src/
-│   ├── main.js
-│   ├── App.vue
-│   ├── plugins/
-│   │   ├── index.js
-│   │   └── vuetify.js
-│   ├── shared/
-│   │   ├── config.js            # Centralized configuration
-│   │   ├── services/
-│   │   │   ├── colorApi.js      # fetch() to thecolorapi.com
-│   │   │   ├── cache.js         # localStorage wrapper
-│   │   │   └── concurrency.js   # Rate limiting utility
-│   │   └── stores/
-│   │       └── app.js           # Notifications
-│   ├── modules/
-│   │   └── swatches/
-│   │       ├── services/
-│   │       │   ├── colorClient.js     # Cache + API coordination
-│   │       │   └── colorDiscovery.js  # Binary search algorithm
-│   │       ├── composables/
-│   │       │   └── useSwatches.js     # Reactive state management
-│   │       └── components/
-│   │           ├── ColorControls.vue
-│   │           ├── SwatchCard.vue
-│   │           └── SwatchGrid.vue
-│   └── pages/
-│       └── index.vue
-├── index.html
-├── jsconfig.json
-├── package.json
-└── vite.config.mjs
-```
 
 ## Configuration
 
@@ -170,48 +107,13 @@ export const config = {
 }
 ```
 
-| Option | Path | Default | Description |
-|--------|------|---------|-------------|
-| API URL | `api.baseUrl` | `thecolorapi.com` | Color API endpoint |
-| Starting Samples | `algorithm.startingSamples` | `20` | Initial hue samples |
-| Concurrency | `algorithm.concurrencyLimit` | `20` | Max parallel requests |
-| Saturation | `defaults.saturation` | `100` | Default S value |
-| Lightness | `defaults.lightness` | `50` | Default L value |
-
 Breakpoints are configured via Vuetify in `src/plugins/vuetify.js`.
 
-## Performance
+## Design Decision Summary
 
-| Scenario | API Calls | Time |
-|----------|-----------|------|
-| First request | ~30-50 | ~3-4 seconds |
-| Cached request | 0 | Instant |
-| Brute force (comparison) | 360 | ~6 minutes |
+**UI:** The input system pairs sliders for quick experimentation with text fields for precise value entry. Loading state uses placeholder skeleton cards so users see exactly where colors will appear, reinforced by a status badge that transitions from "discovering..." to "found". The layout is responsive—controls and grid stack vertically on mobile while expanding horizontally on larger screens.
 
-## Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Framework | Vue 3 |
-| UI Library | Vuetify 3 |
-| State | Pinia |
-| Build | Vite |
-| Cache | localStorage |
-| Container | Docker + nginx |
-| API | The Color API (thecolorapi.com) |
-
-## Color API
-
-```
-GET https://www.thecolorapi.com/id?hsl=0,100%,50%
-
-Response:
-{
-  "hex": { "value": "#FF0000" },
-  "rgb": { "r": 255, "g": 0, "b": 0 },
-  "name": { "value": "Red", "exact_match_name": true }
-}
-```
+**Performance:** Binary search reduces the search space from 360 brute-force API calls to ~30-50 calls (log n complexity), with all branches executing in parallel. The `startingSamples` and `concurrencyLimit` settings in config give direct control over the tradeoff between discovery speed and API resource consumption—though in practice, The Color API never rate-limited during testing. Results are cached in localStorage with no expiration, making repeat requests instant.
 
 ## License
 

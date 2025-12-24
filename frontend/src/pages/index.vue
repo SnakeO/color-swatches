@@ -16,7 +16,7 @@
     <h1 class="text-h4 mb-6">Color Swatches</h1>
 
     <!-- HSL Controls -->
-    <ColorControls @change="handleControlsChange" />
+    <ColorControls class="overflow-visible" @change="handleControlsChange" />
 
     <!-- Color Grid -->
     <SwatchGrid
