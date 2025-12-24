@@ -11,7 +11,7 @@ An HSL color swatch grid application that discovers distinct named colors using 
 
 Enter Saturation and Lightness values, and the app displays all distinct named colors for those HSL coordinates. Colors are discovered using an efficient binary search algorithm with parallel fetching and cached in localStorage for instant repeat requests.
 
-![](https://wow-ss-from-2020.s3.amazonaws.com/demo.mov)
+![](screenshot.png)
 
 ### Features
 

@@ -7,8 +7,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:unit": "vitest run --dir tests/unit",
-    "test:feature": "vitest run --dir tests/feature",
+    "test:unit": "vitest run tests/unit",
+    "test:feature": "vitest run tests/feature",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
   },

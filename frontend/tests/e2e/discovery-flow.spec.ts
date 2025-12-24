@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Color Discovery Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
   })
 
   test('loads with default saturation and lightness', async ({ page }) => {
@@ -15,9 +16,6 @@ test.describe('Color Discovery Flow', () => {
   })
 
   test('shows loading state during discovery', async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
-    await page.goto('/')
-
     const loadingChip = page.locator('.v-chip').filter({ hasText: 'colors found' })
     await expect(loadingChip).toBeVisible({ timeout: 10000 })
   })

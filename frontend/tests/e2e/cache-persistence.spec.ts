@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Cache Persistence', () => {
   test('caches discovery results in localStorage', async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
 
     await page.waitForFunction(() => {
       const chip = document.querySelector('.v-chip')
@@ -19,8 +20,9 @@ test.describe('Cache Persistence', () => {
   })
 
   test('loads from cache on repeat request (instant)', async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
 
     await page.waitForFunction(() => {
       const chip = document.querySelector('.v-chip')
@@ -46,8 +48,9 @@ test.describe('Cache Persistence', () => {
   })
 
   test('shows "(cached)" indicator on cache hit', async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
 
     await page.waitForFunction(() => {
       const chip = document.querySelector('.v-chip')
@@ -63,8 +66,9 @@ test.describe('Cache Persistence', () => {
   })
 
   test('persists cache across page reload', async ({ page }) => {
-    await page.evaluate(() => localStorage.clear())
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+    await page.reload()
 
     await page.waitForFunction(() => {
       const chip = document.querySelector('.v-chip')
@@ -72,7 +76,7 @@ test.describe('Cache Persistence', () => {
     }, { timeout: 60000 })
 
     const initialCount = await page.evaluate(() => {
-      return Object.keys(localStorage).filter((key) => key.startsWith('swatches:')).length
+      return Object.keys(localStorage).filter((key) => key.startsWith('swatches:'))
     })
 
     await page.reload()
