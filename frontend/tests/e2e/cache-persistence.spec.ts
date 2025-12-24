@@ -76,7 +76,7 @@ test.describe('Cache Persistence', () => {
     }, { timeout: 60000 })
 
     const initialCount = await page.evaluate(() => {
-      return Object.keys(localStorage).filter((key) => key.startsWith('swatches:'))
+      return Object.keys(localStorage).filter((key) => key.startsWith('swatches:')).length
     })
 
     await page.reload()
