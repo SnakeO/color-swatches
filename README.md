@@ -111,9 +111,9 @@ Breakpoints are configured via Vuetify in `src/plugins/vuetify.js`.
 
 ## Design Decision Summary
 
-**UI:** The input system pairs sliders for quick experimentation with text fields for precise value entry. Loading state uses placeholder skeleton cards so users see exactly where colors will appear, reinforced by a status badge that transitions from "discovering..." to "found". The layout is responsive—controls and grid stack vertically on mobile while expanding horizontally on larger screens.
+**UI:** I paired sliders for quick experimentation with text fields for precise value entry. For loading state, I used placeholder skeleton cards so users see exactly where colors will appear, reinforced by a status badge that transitions from "discovering..." to "found". I made the layout responsive—controls and grid stack vertically on mobile while expanding horizontally on larger screens.
 
-**Performance:** Binary search reduces the search space from 360 brute-force API calls to ~30-50 calls (log n complexity), with all branches executing in parallel. The `startingSamples` and `concurrencyLimit` settings in config give direct control over the tradeoff between discovery speed and API resource consumption—though in practice, The Color API never rate-limited during testing. Results are cached in localStorage with no expiration, making repeat requests instant.
+**Performance:** I chose binary search to reduce the search space from 360 brute-force API calls to ~30-50 calls (log n complexity), with all branches executing in parallel. I exposed `startingSamples` and `concurrencyLimit` in config to give direct control over the tradeoff between discovery speed and API resource consumption—though in practice, I was unable to hit a rate limit during testing. I cache results in localStorage with no expiration, making repeat requests instant.
 
 ## License
 
