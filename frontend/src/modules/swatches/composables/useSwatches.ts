@@ -36,12 +36,8 @@ export function useSwatches(): UseSwatchesReturn {
 
   /** Insert swatch in sorted order by hue */
   function insertSorted(swatch: ColorData): void {
-    const index = swatches.value.findIndex((s) => s.hue > swatch.hue)
-    if (index === -1) {
-      swatches.value.push(swatch)
-    } else {
-      swatches.value.splice(index, 0, swatch)
-    }
+    swatches.value.push(swatch)
+    swatches.value.sort((a, b) => a.hue - b.hue)
   }
 
   /* --- Public API --- */
