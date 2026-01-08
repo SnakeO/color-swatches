@@ -22,17 +22,19 @@ interface ColorApiResponse {
  * @param hue - Hue value (0-359)
  * @param saturation - Saturation percentage (0-100)
  * @param lightness - Lightness percentage (0-100)
+ * @param signal - Optional AbortSignal to cancel the request
  */
 export async function fetchColor(
   hue: number,
   saturation: number,
-  lightness: number
+  lightness: number,
+  signal?: AbortSignal
 ): Promise<ColorData> {
   const params = new URLSearchParams({
     hsl: `${hue},${saturation}%,${lightness}%`,
   })
 
-  const response = await fetch(`${config.api.baseUrl}/id?${params}`)
+  const response = await fetch(`${config.api.baseUrl}/id?${params}`, { signal })
 
   if (!response.ok) {
     throw new Error(`Color API error: ${response.status}`)

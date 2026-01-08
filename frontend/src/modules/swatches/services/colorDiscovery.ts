@@ -25,6 +25,7 @@ interface BinarySearchParams {
   l: number
   foundNames: Set<string>
   limit: LimiterFunction
+  signal?: AbortSignal
 }
 
 /**
@@ -46,16 +47,21 @@ export function getSampleHues(count: number): number[] {
  * Binary search for color boundaries between two points
  */
 async function binarySearch(
-  { left, right, s, l, foundNames, limit }: BinarySearchParams,
+  { left, right, s, l, foundNames, limit, signal }: BinarySearchParams,
   onColorFound: (color: ColorData) => void
 ): Promise<void> {
+  // Check if aborted
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError')
+  }
+
   // recursive base case
   if (right.hue - left.hue <= 1) {
     return
   }
 
   const midHue = Math.floor((left.hue + right.hue) / 2)
-  const midPoint = await getColorAtHue(midHue, s, l, limit)
+  const midPoint = await getColorAtHue(midHue, s, l, limit, signal)
 
   if (!foundNames.has(midPoint.name)) {
     foundNames.add(midPoint.name)
@@ -65,10 +71,10 @@ async function binarySearch(
   // Search BOTH sides in PARALLEL
   const branches: Promise<void>[] = []
   if (midPoint.name !== left.name) {
-    branches.push(binarySearch({ left, right: midPoint, s, l, foundNames, limit }, onColorFound))
+    branches.push(binarySearch({ left, right: midPoint, s, l, foundNames, limit, signal }, onColorFound))
   }
   if (midPoint.name !== right.name) {
-    branches.push(binarySearch({ left: midPoint, right, s, l, foundNames, limit }, onColorFound))
+    branches.push(binarySearch({ left: midPoint, right, s, l, foundNames, limit, signal }, onColorFound))
   }
   await Promise.all(branches)
 }
@@ -78,19 +84,31 @@ async function binarySearch(
  * @param s - Saturation (0-100)
  * @param l - Lightness (0-100)
  * @param onColorFound - Callback for each discovered color
+ * @param signal - Optional AbortSignal to cancel discovery
  */
 export async function discoverColors(
   s: number,
   l: number,
-  onColorFound: (color: ColorData) => void
+  onColorFound: (color: ColorData) => void,
+  signal?: AbortSignal
 ): Promise<void> {
+  // Check if already aborted
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError')
+  }
+
   const limit = createLimiter(CONCURRENCY_LIMIT)
   const foundNames = new Set<string>()
 
   // Phase 1: Fetch initial samples in PARALLEL
   const sampleHues = getSampleHues(STARTING_SAMPLES)
-  const samplePromises = sampleHues.map((hue) => getColorAtHue(hue, s, l, limit))
+  const samplePromises = sampleHues.map((hue) => getColorAtHue(hue, s, l, limit, signal))
   const samplePoints = await Promise.all(samplePromises)
+
+  // Check if aborted after initial fetch
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError')
+  }
 
   // Emit unique colors from initial samples
   for (const point of samplePoints) {
@@ -107,7 +125,7 @@ export async function discoverColors(
     const right = samplePoints[i + 1]
 
     if (left && right && left.name !== right.name) {
-      gapSearches.push(binarySearch({ left, right, s, l, foundNames, limit }, onColorFound))
+      gapSearches.push(binarySearch({ left, right, s, l, foundNames, limit, signal }, onColorFound))
     }
   }
   await Promise.all(gapSearches)

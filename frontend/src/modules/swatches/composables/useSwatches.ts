@@ -68,7 +68,7 @@ export function useSwatches(): UseSwatchesReturn {
       }
 
       // Cache miss - run discovery (callback inserts each as found)
-      await discoverColors(saturation, lightness, insertSorted)
+      await discoverColors(saturation, lightness, insertSorted, abortController.signal)
 
       // Cache results (already sorted by insertSorted)
       cache.set(swatchesKey, swatches.value)

@@ -22,7 +22,8 @@ describe('fetchColor', () => {
     await fetchColor(0, 100, 50)
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('hsl=0%2C100%25%2C50%25')
+      expect.stringContaining('hsl=0%2C100%25%2C50%25'),
+      expect.objectContaining({ signal: undefined })
     )
   })
 

@@ -65,7 +65,7 @@ describe('useSwatches', () => {
       const { fetchSwatches } = useSwatches()
       await fetchSwatches(100, 50)
 
-      expect(mockDiscoverColors).toHaveBeenCalledWith(100, 50, expect.any(Function))
+      expect(mockDiscoverColors).toHaveBeenCalledWith(100, 50, expect.any(Function), expect.any(AbortSignal))
     })
 
     it('caches results after discovery', async () => {
@@ -85,13 +85,16 @@ describe('useSwatches', () => {
 
     it('aborts previous fetch on new request', async () => {
       mockCache.get.mockReturnValue(null)
-      let firstCallbackCalled = false
+      let firstSignalAborted = false
       let secondCallbackCalled = false
 
-      mockDiscoverColors.mockImplementationOnce(async (s, l, cb) => {
+      mockDiscoverColors.mockImplementationOnce(async (s, l, cb, signal) => {
         await new Promise((r) => setTimeout(r, 50))
-        firstCallbackCalled = true
-        cb(createColor(0, 'First'))
+        // Check if signal was aborted
+        firstSignalAborted = signal?.aborted ?? false
+        if (!signal?.aborted) {
+          cb(createColor(0, 'First'))
+        }
       })
 
       mockDiscoverColors.mockImplementationOnce(async (s, l, cb) => {
@@ -106,8 +109,25 @@ describe('useSwatches', () => {
 
       await first.catch(() => {})
 
+      expect(firstSignalAborted).toBe(true)
       expect(secondCallbackCalled).toBe(true)
       expect(swatches.value.some((s) => s.name === 'Second')).toBe(true)
+    })
+
+    it('passes AbortSignal to discoverColors', async () => {
+      mockCache.get.mockReturnValueOnce(null)
+      let receivedSignal: AbortSignal | undefined
+
+      mockDiscoverColors.mockImplementationOnce(async (s, l, cb, signal) => {
+        receivedSignal = signal
+        cb(createColor(0, 'Red'))
+      })
+
+      const { fetchSwatches } = useSwatches()
+      await fetchSwatches(100, 50)
+
+      expect(receivedSignal).toBeInstanceOf(AbortSignal)
+      expect(receivedSignal?.aborted).toBe(false)
     })
 
     it('updates loading state correctly', async () => {

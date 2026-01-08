@@ -15,12 +15,14 @@ import type { ColorData, LimiterFunction } from '@/shared/types'
  * @param s - Saturation (0-100)
  * @param l - Lightness (0-100)
  * @param limit - Concurrency limiter function
+ * @param signal - Optional AbortSignal to cancel the request
  */
 export async function getColorAtHue(
   hue: number,
   s: number,
   l: number,
-  limit: LimiterFunction
+  limit: LimiterFunction,
+  signal?: AbortSignal
 ): Promise<ColorData> {
-  return await limit(() => fetchColor(hue, s, l))
+  return await limit(() => fetchColor(hue, s, l, signal))
 }
